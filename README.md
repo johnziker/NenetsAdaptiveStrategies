@@ -1,2 +1,2 @@
 # NenetsAdaptiveStrategies
-data for RSTB artcile
+data for RSTB article
