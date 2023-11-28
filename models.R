@@ -9,6 +9,7 @@
 
 ############# 
 library(rstan)
+options(mc.cores = parallel::detectCores())
 library(brms)
 library(bayesplot)
 
@@ -229,3 +230,101 @@ mcmc_intervals(posterior9, pars = c(
   "b_z_s_20Cdays",      
   "b_z_w_ros",           
   "sd_hid__Intercept"))
+
+#################################################
+### Post reviewer comments, what can we learn
+
+
+#Fixed effects of year, winter temperature sum, summer warm days, winter rain on snow; 
+# Variable effect of household
+bfit10 <- brm(bi_migb ~ year + z_w_sumtemp + z_s_20Cdays + z_w_ros + (1|hid), 
+             data=data, family=negbinomial("log"))   
+
+mcmc_plot(bfit10, type ="trace") # no divergences to plot
+
+posterior10 <- as.array(bfit10)
+dimnames(posterior10)
+color_scheme_set("red")
+mcmc_intervals(posterior10, pars = c(
+  "b_year",              
+  "b_z_w_sumtemp",       
+  "b_z_s_20Cdays",      
+  "b_z_w_ros",           
+  "sd_hid__Intercept"))
+
+# Fixed effects of year, winter temp above -5c,
+# winter temperature -5c sum, summer sum of temps above 20c, summer warm days, winter rain on snow; 
+# Variable effect of household
+bfit11 <- brm(bi_migb ~ year + z_w5c + z_w_sumtemp + z_s_sumtemp + z_s_20Cdays + z_w_ros + (1|hid), 
+              data=data, family=negbinomial("log"))   
+
+mcmc_plot(bfit11, type ="trace") # no divergences to plot
+
+posterior11 <- as.array(bfit11)
+dimnames(posterior11)
+color_scheme_set("red")
+mcmc_intervals(posterior11, pars = c(
+  "b_year", 
+  "b_z_w5c",
+  "b_z_w_sumtemp",  
+  "b_z_s_sumtemp",
+  "b_z_s_20Cdays",      
+  "b_z_w_ros",           
+  "sd_hid__Intercept"))
+
+##### Remove records that have industry, social, wild reindeer reasons #####################################
+
+library(dplyr)
+
+data1 <- data %>% 
+    filter(reason != "industry") %>% 
+    filter(reason != "social") %>% 
+    filter(reason != "wild_reindeer")
+
+#Fixed effects of year, winter temperature sum, summer warm days, winter rain on snow; 
+# Variable effect of household
+bfit12 <- brm(bi_migb ~ year + z_w5c + z_w_sumtemp + z_s_sumtemp + z_s_20Cdays + z_w_ros + (1|hid), 
+              data=data1, family=negbinomial("log"))   
+
+mcmc_plot(bfit12, type ="trace") # no divergences to plot
+
+posterior12 <- as.array(bfit12)
+dimnames(posterior12)
+color_scheme_set("red")
+mcmc_intervals(posterior12, pars = c(
+  "b_year", 
+  "b_z_w5c",
+  "b_z_w_sumtemp",  
+  "b_z_s_sumtemp",
+  "b_z_s_20Cdays",      
+  "b_z_w_ros",           
+  "sd_hid__Intercept"))
+
+#Fixed effects of year, winter 5c days
+bfit13 <- brm(bi_migb ~ year + z_w5c , 
+              data=data1, family=negbinomial("log"))   
+
+mcmc_plot(bfit13, type ="trace") # no divergences to plot
+
+posterior13 <- as.array(bfit13)
+dimnames(posterior13)
+color_scheme_set("red")
+mcmc_intervals(posterior13, pars = c(
+  "b_year", 
+  "b_z_w5c"))
+
+#Fixed effects of year, winter temperature sum
+bfit14 <- brm(bi_migb ~ year + z_w_sumtemp, 
+              data=data1, family=negbinomial("log"))   
+
+mcmc_plot(bfit14, type ="trace") # no divergences to plot
+
+posterior14 <- as.array(bfit14)
+dimnames(posterior14)
+color_scheme_set("red")
+mcmc_intervals(posterior14, pars = c(
+  "b_year", 
+  "b_z_w_sumtemp"))
+
+
+
